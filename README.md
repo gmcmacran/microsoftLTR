@@ -2,25 +2,26 @@
 # Summary
 
 This repo builds a boosted model focused on ranking with LightGPM on the
-Microsoft’s Web30K dataset. Gain at the top 10 scores is around .583 on
-unseen data. This is considerably higher than the publication this code
-is based on indicating improvements in source code after printing.
+Microsoft’s Web30K dataset. Gain is directly optimized during training.
+At the top 10 scores, gain is .583 on unseen data. This is considerably
+higher than the publication this code is based on indicating
+improvements in source code after printing.
 
 For compute speed, I used the Polars data frame library and GPU
 training.
 
 # Data Overview
 
-## Query and Documents
+### Query and Documents
 
-Learning to rank (L.T.R.) M.L. has its origin in search engine
-optimization. Because of this, there are two key ideas. Documents and
-queries. A document is a web page. The page is crawled and features are
-created. Example features include covered query term number, term
+Learning to rank (L.T.R.) machine learning has its origin in search
+engine optimization. Because of this, there are two key ideas: documents
+and queries. A document is a web page. The page is crawled and features
+are created. Example features include covered query term number, term
 frequency, and stream length. A query is the string the user types into
-Bing. There is a many to one relationship between documents and queries
-stemming from the user sees many web pages per search. Further, a
-document may show up in many queries.
+Bing. There is a many-to-many relationship between documents and queries
+stemming from the user sees many web pages per search and a document may
+show up in many queries.
 
 Each row in training is a document. The first ten rows look like
 
@@ -50,13 +51,13 @@ similar.
 
 ![](README_files/figure-commonmark/cell-4-output-1.png)
 
-    <ggplot: (132394877206)>
+    <ggplot: (143509877014)>
 
 This project uses fold one of Microsoft’s data. The vali.txt file is
 split into two pieces and put into train and test datasets. Raw data can
 be found [here](https://www.microsoft.com/en-us/research/project/mslr/).
 
-## Cleaning Process
+### Cleaning Process
 
 - Step 1: Load .txt files.
 - Step 2: Name columns.
@@ -67,7 +68,7 @@ be found [here](https://www.microsoft.com/en-us/research/project/mslr/).
 
 # Model Summary
 
-## Results
+### Results
 
 Model training is made easy by LightGPM. For ranking the major changes
 are calling LGBMRanker and setting the objective to “rank_xendcg”.
@@ -79,18 +80,17 @@ Learning-to-Rank has NCDG around .48 and this was bleeding edge
 performance when it was printed. Microsoft has improved model training
 since then.
 
-## Cross Validation Considerations
+### Cross Validation Considerations
 
 There are two main challenges:
 
-- 1: Different data between calling predict and performance
-  calculations.
-- 2: Keeping all documents in a query ID together for in sample and out
-  of sample assessment.
+- 1: Different data between predict and performance calculations.
+- 2: Keeping all documents in a query ID together for in-sample and
+  out-of-sample assessment.
 
 For point one, the data passed into LGBMRanker has one row per document.
 The performance metric requires one row per query and document scores
-are the columns. This intermediate data shaping between predictions to
+are the columns. This intermediate data shaping between predictions and
 performance calculations requires a custom metric creation to use
 scikit-learn’s cross validation functionality.
 
@@ -100,19 +100,19 @@ together. Scikit-learn assumes each row is independent and takes a
 random samples. This is true for regression and classification but is
 not in learning to rank problems.
 
-The path forward is either writing nested for loops or using an autoML
+The path forward is either writing custom CV logic or using an autoML
 library like FLAML.
 
 # Tech Stack
 
-## Polars Data Frame Library
+### Polars Data Frame Library
 
 Polars is a high speed data frame library capable of handling millions
 in memory data points. H2O’s ran a benchmark across python’s, R’s, and
 Julia’s data frame libraries. Polars was often the fastest and almost
 always in the top 3. It usually beats R’s data.table.
 
-## GPU Considerations
+### GPU Considerations
 
 For the Windows platform, the pip install process includes all the
 necessary parts for training on a GPU. At writing, the Linux and Mac
@@ -130,7 +130,7 @@ statistics is challenging because ranking is a discontinuous process and
 any single point’s rank depends on all other points’ scores. Many
 approaches have been purposed to deal with these challenges.
 
-One example is approximating the ranking statistic with a smooth
+One example is approximating a ranking statistic with a smooth
 continuous function and optimizing the approximation with typical
 gradient based approaches. This approach is only moderately successful
 as the smoother the function is (and therefore easier to optimize), the
@@ -152,4 +152,5 @@ heuristics.
 XE-NDCG is a leap forward because it provides a clear mathematical
 framework, is convex and is differentiable. These properties lead to
 improvements in rank statistics, easier optimization during training,
-and improved robustness to mislabeled data.
+and improved robustness to mislabeled data. This is the loss function
+used in this project.

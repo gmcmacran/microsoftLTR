@@ -3,7 +3,7 @@
 
 This repo builds a boosted model focused on ranking with LightGPM on the
 Microsoft’s Web30K dataset. Gain is directly optimized during training.
-At the top 10 scores, gain is .583 on unseen data. This is considerably
+At the top 10 scores, gain is .571 on unseen data. This is considerably
 higher than the publication this code is based on indicating
 improvements in source code after printing.
 
@@ -39,20 +39,20 @@ Each row in training is a document. The first ten rows look like
     │ 1.0   ┆ 1.0 ┆ 3.0 ┆ 0.0 ┆ ... ┆ 13.0 ┆ 0.0  ┆ 0.0  ┆ 0.0  │
     └───────┴─────┴─────┴─────┴─────┴──────┴──────┴──────┴──────┘
 
-- Train N: 2,643,905 (documents)
+- Train N: 2,639,619 (documents)
 
-- Test N: 1,120,827 (documents)
+- Test N: 1,131,506 (documents)
 
-- Train queries: 22,036
+- Train queries: 22,072
 
-- Test queries: 6,306
+- Test queries: 9,459
 
 For these data, the number of documents per query looks somewhat
 similar.
 
 ![](README_files/figure-commonmark/cell-4-output-1.png)
 
-    <ggplot: (131454496790)>
+    <ggplot: (175242661910)>
 
 This project uses fold one of Microsoft’s data. The vali.txt file is
 split into two pieces and put into train and test datasets. Raw data can
@@ -73,8 +73,8 @@ be found [here](https://www.microsoft.com/en-us/research/project/mslr/).
 
 Model training is made easy by LightGPM. For ranking the major changes
 are calling LGBMRanker and setting the objective to “rank_xendcg”.
-Without much tuning, the model had a NCDG of .58 for top 5 scores and
-.58 for top 10 scores on the unseen test data.
+Without much tuning, the model had a NCDG of .567 for top 5 scores and
+.571 for top 10 scores on the unseen test data.
 
 For reference, the publication An Alternative Cross Entropy Loss for
 Learning-to-Rank has NCDG around .48 and this was bleeding edge
@@ -117,8 +117,8 @@ always in the top 3. It usually beats R’s data.table.
 
 For the Windows platform, the pip install process includes all the
 necessary parts for training on a GPU. At writing, the Linux and Mac
-don’t have this functionality. In addition, installing with conda on
-Windows does not provide GPU support.
+platforms don’t have this functionality. In addition, installing with
+conda on Windows does not provide GPU support.
 
 # Mathematical History
 

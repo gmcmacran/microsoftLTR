@@ -32,10 +32,15 @@ train.head()
 
 # %%
 # Combine to only train and test only
-halfIndex = int(np.floor(valid.shape[0] / 2))
-train = pl.concat([train, valid[0:halfIndex]])
-test = pl.concat([valid, valid[halfIndex:valid.shape[0]]])
-del valid, halfIndex
+# Split qids randomly
+temp = valid.select([pl.col('qid')]).unique()
+N = int(temp.shape[0]/2)
+temp_01 = valid.join(other = temp.sample(n = N, seed = 42), how = 'semi', on = 'qid')
+temp_02 = valid.join(other = temp_01, how = 'anti', on = 'qid')
+
+train = pl.concat([train, temp_01])
+test = pl.concat([test, temp_02])
+del valid, N, temp_01, temp_02,temp
 
 ##############
 # Minimal exploration
@@ -165,7 +170,6 @@ def tidy(labels, predictions, groups):
 
 labels_train, preds_train = tidy(y_train, pred_train, groups_train)
 labels_test, preds_test = tidy(y_test, pred_test, groups_test)
-
 
 # %% Sanity checks
 (

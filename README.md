@@ -13,9 +13,9 @@ training.
 
 ## Query and Documents
 
-Learning to rank M.L. has its origin in search engine optimization.
-Because of this, there are two key ideas. Documents and queries unique
-to LTR. A document is a web page. The page is crawled and features are
+Learning to rank (L.T.R.) M.L. has its origin in search engine
+optimization. Because of this, there are two key ideas. Documents and
+queries. A document is a web page. The page is crawled and features are
 created. Example features include covered query term number, term
 frequency, and stream length. A query is the string the user types into
 Bing. There is a many to one relationship between documents and queries
@@ -45,11 +45,12 @@ Each row in training is a document. The first ten rows look like
 
 - Test queries: 6,306
 
-For these data, the number of documents per query looks similar.
+For these data, the number of documents per query looks somewhat
+similar.
 
 ![](README_files/figure-commonmark/cell-4-output-1.png)
 
-    <ggplot: (92389093654)>
+    <ggplot: (132394877206)>
 
 This project uses fold one of Microsoft’s data. The vali.txt file is
 split into two pieces and put into train and test datasets. Raw data can
@@ -89,25 +90,24 @@ There are two main challenges:
 
 For point one, the data passed into LGBMRanker has one row per document.
 The performance metric requires one row per query and document scores
-are the columns. This intermediate data shaping between predictions (one
-row per document) to performance calculations (one row per query ID)
-would require a custom metric creation to use sci-kit learn’s cross
-validation functionality.
+are the columns. This intermediate data shaping between predictions to
+performance calculations requires a custom metric creation to use
+scikit-learn’s cross validation functionality.
 
-Point two is the nail in the coffin for scikit learn’s CV functionality.
+Point two is the nail in the coffin for scikit-learn’s CV functionality.
 Learning to rank data requires care to keep all documents within a query
-together. Scikit learn assumes each row is independent and takes random
-samples. This is true for regression and classification, but is not in
-learning to rank problems.
+together. Scikit-learn assumes each row is independent and takes a
+random samples. This is true for regression and classification but is
+not in learning to rank problems.
 
-The path forward is either writing nested for loops. One loop per tuned
-hyper parameter or using an autoML library like FLAML.
+The path forward is either writing nested for loops or using an autoML
+library like FLAML.
 
 # Tech Stack
 
 ## Polars Data Frame Library
 
-Polars is a high speed data frame library capibale of handeling millions
+Polars is a high speed data frame library capable of handling millions
 in memory data points. H2O’s ran a benchmark across python’s, R’s, and
 Julia’s data frame libraries. Polars was often the fastest and almost
 always in the top 3. It usually beats R’s data.table.
@@ -121,10 +121,10 @@ Windows does not provide GPU support.
 
 # Mathematical History
 
-Learning to rank (LTR) is a separate approach from regression and
-classification. Through loss functions, LTR focuses on optimizing a rank
-based statistic during training. Example rank based statistics are mean
-reciprocal rank (MRR), mean average precision (MAP), and normalized
+Learning to rank is a separate approach from regression and
+classification. Through loss functions, L.T.R. focuses on optimizing a
+rank based statistic during training. Example rank based statistics are
+mean reciprocal rank (MRR), mean average precision (MAP), and normalized
 discounted cumulative gain (NDCG). Fundamentally, optimizing rank
 statistics is challenging because ranking is a discontinuous process and
 any single point’s rank depends on all other points’ scores. Many
@@ -142,14 +142,14 @@ value of the bound is not guaranteed to be the optimal value of the rank
 statistic. Further, increases in the bound may be associated with no
 change in the rank statistic.
 
-Lambda rank was a major breakthrough in performance. Empirically, this
+LambdaRank was a major breakthrough in performance. Empirically, this
 loss function lead to better rank statistics than any other loss
-function of the time. The major downside is it was not mathematically
-well understood and relied on heuristics. It was the first rank focused
-loss function to get high quality implementations in both LightGBM and
-XGBoost.
+function of the time. It was the first rank focused loss function to get
+high quality implementations in both LightGBM and XGBoost. The one
+drawback was it was not mathematically well understood and relied on
+heuristics.
 
-XE-NDCG is a leap forward in that it provides a clear mathematical
+XE-NDCG is a leap forward because it provides a clear mathematical
 framework, is convex and is differentiable. These properties lead to
-improvments in rank statistics, easier optimization during training, and
-improved robustness to mislabeled data.
+improvements in rank statistics, easier optimization during training,
+and improved robustness to mislabeled data.

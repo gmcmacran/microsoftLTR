@@ -6,7 +6,19 @@ jupyter: python3
 ---
 
 # Summary
-This repo builds a ranking boosted model with LightGPU on the Microsoft's Web30K dataset. Gain at the top 10 scores is around .583 on unseen data. This is considerably higher than the publication this code is based on indicating improvements in source code after printing.
+This repo builds a boosted model focused on ranking with LightGPM on the Microsoft's Web30K dataset. Gain at the top 10 scores is around .583 on unseen data. This is considerably higher than the publication this code is based on indicating improvements in source code after printing.
+
+For compute speed, I used the Polars data frame library and GPU training.
+
+# Mathematical History
+Learning to rank (LTR) is a separate approach from regression and classification. Through loss functions, LTR focuses on optimizing a rank based statistic during training. Example rank based statistics are mean reciprocal rank (MRR), mean average precision (MAP), and normalized discounted cumulative gain (NDCG). Fundamentally, optimizing rank statistics is challenging because ranking is a discontinuous process and any single point’s rank depends on all other points’ scores.
+
+Many approaches have been purposed. One example is approximating the ranking statistic with a smooth continuous function and optimizing the approximation with typical gradient based approaches. This approach is only moderately successful as the smoother the function is (and therefore easier to optimize), the less accurate approximation becomes.
+
+Another approach is formulating a lower bound on a ranking statistic that is smooth and optimizing it. This lower bound has two problems. The optimal value of the lower bound is not guaranteed to be the optimal value of the rank statistic. Further, the bound could be very loose bound. Increases in the bound may be associated with no change in the rank statistic.
+
+Lambda rank was a major breakthrough in performance. Empirically, this loss function lead to better rank statistics than any other loss function of the time. The major downside is it was not mathematically well understood and relied on heuristics. XE-NDCG is a leap forward in that it provides a clear mathematical framework, is convex and is differentiable. These properties lead to slightly better rank statistics, easier optimization during training, and improved robustness to mislabeled data.
+ 
 
 # Data Overview
 
@@ -82,7 +94,18 @@ Data shaping was the major hurdle for this project. Model training is made easy 
 
 For reference, the publication An Alternative Cross Entropy Loss for Learning-to-Rank has NCDG around .48 and this was bleeding edge performance when it was printed. It appears Microsoft has improved model training since then.
 
-On a technical front, the data passed into LGBMRanker has one row per document. The performance metric requires one row per query and document scores are the columns. This intermediate data shaping between predictions (one row per document) to performance calculations (one row per query ID) would require a custom metric creation to use sci-kit learn's cross validation functionality. 
+## Cross Validation Considerations
+
+There are two main challenges: 
+-   1: Different data between calling predict and performance calculations. 
+-   2: Keeping all documents in a query ID together for in sample and out of sample assessment.
+
+For point one, the data passed into LGBMRanker has one row per document. The performance metric requires one row per query and document scores are the columns. This intermediate data shaping between predictions (one row per document) to performance calculations (one row per query ID) would require a custom metric creation to use sci-kit learn’s cross validation functionality.
+
+Point two is the nail in the coffin for using scikit learn’s CV functionality. Learning to rank data requires care to keep all documents within a query together. Scikit learn assumes each row is independent. This is true for regression and classification, but in learning to rank problems.
+
+The path forward is either writing nested for loops. One loop per tuned hyper parameter or using an autoML library like FLAML.
+
 
 ## Hardware Considerations
 For the Windows platform, the pip install process includes all the necessary parts for training on a GPU. At writing, the Linux and Mac don't have this option. In addition, installing with conda on Windows does not provide GPU support. 

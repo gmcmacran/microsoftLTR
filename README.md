@@ -21,7 +21,8 @@ are created. Example features include covered query term number, term
 frequency, and stream length. A query is the string the user types into
 Bing. There is a many-to-many relationship between documents and queries
 stemming from the user sees many web pages per search and a document may
-show up in many queries.
+show up in many queries. The label for a document depends on the query
+it is in.
 
 Each row in training is a document. The first ten rows look like
 
@@ -51,7 +52,7 @@ similar.
 
 ![](README_files/figure-commonmark/cell-4-output-1.png)
 
-    <ggplot: (143509877014)>
+    <ggplot: (131454496790)>
 
 This project uses fold one of Microsoft’s data. The vali.txt file is
 split into two pieces and put into train and test datasets. Raw data can

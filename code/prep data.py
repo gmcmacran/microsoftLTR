@@ -15,12 +15,12 @@ import numpy as np
 ##############
 # %%
 # Steps:
-#   1: Loads .txt files
-#   2: Names columns.
-#   3: Removes a few columns.
-#   4: Removes leading string in values.
-#   5: Convers variables to numerics.
-#   6: Writes ipc files for quick loads.
+# 1: Load .txt files
+# 2: Name columns.
+# 3: Remove a few columns.
+# 4: Remove leading string in values.
+# 5: Convert variables to numerics.
+# 6: Write ipc files for quick loads.
 def create_ipc_files(filenames):
 
     dfs = []

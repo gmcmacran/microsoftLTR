@@ -1,0 +1,4 @@
+Git should not version large files. Github will not host these files.
+Github large file storage has a limit of two gig storage for free. I need 6 gigs. 
+Files can be found at https://www.microsoft.com/en-us/research/project/mslr/ or 
+https://www.tensorflow.org/datasets/catalog/mslr_web

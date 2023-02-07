@@ -2,29 +2,29 @@
 # Summary
 
 This repo builds a boosted model focused on ranking with LightGPM on the
-Microsoft’s Web30K dataset. Gain is directly optimized during training.
-At the top 10 scores, gain is .571 on unseen data. This is considerably
-higher than the publication this code is based on indicating
-improvements in source code after printing.
+Microsoft’s Web30K dataset. Gain is directly optimized during model
+training. At the top 10 scores, gain is .571 on unseen data. This is
+considerably higher than the publication this code is based on
+indicating improvements in source code after printing.
 
 For compute speed, I used the Polars data frame library and GPU
 training.
 
 # Data Overview
 
-### Query and Documents
+### Queries and Documents
 
 Learning to rank (L.T.R.) machine learning has its origin in search
 engine optimization. Because of this, there are two key ideas: documents
 and queries. A document is a web page. The page is crawled and features
 are created. Example features include covered query term number, term
 frequency, and stream length. A query is the string the user types into
-Bing. There is a many-to-many relationship between documents and queries
-stemming from the user sees many web pages per search and a document may
-show up in many queries. The label for a document depends on the query
-it is in.
+Bing. There is a many-to-many relationship between documents and
+queries. The web surfer sees many web pages per search, and a document
+may show up in many queries. The label for a document depends on the
+query it is in.
 
-Each row in training is a document. The first ten rows look like
+Each row in training is a document. The first five rows look like
 
     shape: (5, 98)
     ┌───────┬─────┬─────┬─────┬─────┬──────┬──────┬──────┬──────┐
@@ -47,12 +47,12 @@ Each row in training is a document. The first ten rows look like
 
 - Test queries: 9,459
 
-For these data, the number of documents per query looks somewhat
+For these data, the number of documents per query looks only somewhat
 similar.
 
 ![](README_files/figure-commonmark/cell-4-output-1.png)
 
-    <ggplot: (175242661910)>
+    <ggplot: (132204371990)>
 
 This project uses fold one of Microsoft’s data. The vali.txt file is
 split into two pieces and put into train and test datasets. Raw data can
@@ -89,8 +89,8 @@ There are two main challenges:
 - 2: Keeping all documents in a query ID together for in-sample and
   out-of-sample assessment.
 
-For point one, the data passed into LGBMRanker has one row per document.
-The performance metric requires one row per query and document scores
+For point one, the data passed into LGBMRanker has one document per row.
+The performance metric requires one query per row and document scores
 are the columns. This intermediate data shaping between predictions and
 performance calculations requires a custom metric creation to use
 scikit-learn’s cross validation functionality.
@@ -109,9 +109,10 @@ library like FLAML.
 ### Polars Data Frame Library
 
 Polars is a high speed data frame library capable of handling millions
-in memory data points. H2O’s ran a benchmark across python’s, R’s, and
+in memory data points. H2O ran a benchmark across python’s, R’s, and
 Julia’s data frame libraries. Polars was often the fastest and almost
-always in the top 3. It usually beats R’s data.table.
+always in the top 3. It usually beats R’s data.table which is
+historically the gold standard for speed.
 
 ### GPU Considerations
 
@@ -123,17 +124,18 @@ conda on Windows does not provide GPU support.
 # Mathematical History
 
 Learning to rank is a separate approach from regression and
-classification. Through loss functions, L.T.R. focuses on optimizing a
-rank based statistic during training. Example rank based statistics are
-mean reciprocal rank (MRR), mean average precision (MAP), and normalized
-discounted cumulative gain (NDCG). Fundamentally, optimizing rank
-statistics is challenging because ranking is a discontinuous process and
-any single point’s rank depends on all other points’ scores. Many
-approaches have been purposed to deal with these challenges.
+classification. Through loss functions, L.T.R. focuses on directly
+optimizing a rank based statistic during training. Example rank based
+statistics are mean reciprocal rank (MRR), mean average precision (MAP),
+and normalized discounted cumulative gain (NDCG). Fundamentally,
+optimizing rank statistics is challenging because ranking is a
+discontinuous process and any single point’s rank depends on all other
+points’ scores. Many approaches have been purposed to deal with these
+challenges.
 
 One example is approximating a ranking statistic with a smooth
 continuous function and optimizing the approximation with typical
-gradient based approaches. This approach is only moderately successful
+gradient based approaches. This approach was only moderately successful
 as the smoother the function is (and therefore easier to optimize), the
 less accurate the approximation becomes.
 
@@ -146,9 +148,8 @@ change in the rank statistic.
 LambdaRank was a major breakthrough in performance. Empirically, this
 loss function lead to better rank statistics than any other loss
 function of the time. It was the first rank focused loss function to get
-high quality implementations in both LightGBM and XGBoost. The one
-drawback was it was not mathematically well understood and relied on
-heuristics.
+high quality implementations in both LightGBM and XGBoost. A drawback
+was its reliance on heuristics instead of mathematics.
 
 XE-NDCG is a leap forward because it provides a clear mathematical
 framework, is convex and is differentiable. These properties lead to

@@ -8,7 +8,7 @@ jupyter: python3
 # Summary
 This repo builds a boosted model focused on ranking with LightGPM on the Microsoft's Web30K dataset. Gain is directly optimized during model training. At the top 10 scores, gain is .571 on unseen data. This is considerably higher than the publication this code is based on indicating improvements in source code after printing.
 
-For compute speed, I used the Polars data frame library and GPU training.
+For compute speed, I used the [Polars data frame library](https://www.pola.rs) and GPU training.
 
 # Data Overview
 

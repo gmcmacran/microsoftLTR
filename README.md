@@ -7,8 +7,8 @@ training. At the top 10 scores, gain is .571 on unseen data. This is
 considerably higher than the publication this code is based on
 indicating improvements in source code after printing.
 
-For compute speed, I used the Polars data frame library and GPU
-training.
+For compute speed, I used the [Polars data frame
+library](https://www.pola.rs) and GPU training.
 
 # Data Overview
 
@@ -52,7 +52,7 @@ similar.
 
 ![](README_files/figure-commonmark/cell-4-output-1.png)
 
-    <ggplot: (132204371990)>
+    <ggplot: (117281824784)>
 
 This project uses fold one of Microsoft’s data. The vali.txt file is
 split into two pieces and put into train and test datasets. Raw data can
